@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Teachers' Day!</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Playfair+Display:ital,wght@0,600;1,600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --envelope-dark: #2d2621;
+      --envelope-gold: #e5c158;
+      --card-bg: #fffdf7;
+      --accent-red: #d93838;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at center, #2e241f 0%, #120e0c 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Playfair Display', serif;
+      overflow: hidden;
+      color: #fff;
+      user-select: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wrapper {
+      position: relative;
+      width: 320px;
+      height: 220px;
+      cursor: pointer;
+      perspective: 1200px;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Envelope Base */
+    .envelope {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: var(--envelope-dark);
+      border-radius: 8px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      border: 1px solid rgba(229, 193, 88, 0.2);
+    }
+
+    .envelope::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      border-left: 160px solid transparent;
+      border-right: 160px solid transparent;
+      border-top: 115px solid var(--envelope-gold);
+      transform-origin: top;
+      transition: transform 0.5s ease-in-out 0.2s, z-index 0.1s;
+      z-index: 5;
+    }
+
+    .envelope-front {
+      position: absolute;
+      width: 100%; height: 100%;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .envelope-front::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      border-left: 160px solid var(--envelope-dark);
+      border-bottom: 110px solid var(--envelope-dark);
+      border-top: 110px solid transparent;
+      border-right: 160px solid transparent;
+      border-bottom-left-radius: 8px;
+    }
+
+    .envelope-front::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      border-right: 160px solid #231d19;
+      border-bottom: 110px solid #231d19;
+      border-top: 110px solid transparent;
+      border-left: 160px solid transparent;
+      border-bottom-right-radius: 8px;
+    }
+
+    .wax-seal {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -30%);
+      width: 55px; height: 55px;
+      background: radial-gradient(circle, #f05252 0%, #a81c1c 100%);
+      border-radius: 50%;
+      z-index: 6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      border: 2px dashed rgba(255,255,255,0.4);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .wax-seal::after { content: '🎓'; font-size: 1.5rem; }
+
+    /* 3D DRAGGABLE CARD CONTAINER */
+    .card-3d-wrapper {
+      position: absolute;
+      left: 10px; bottom: 10px;
+      width: 300px; height: 190px;
+      perspective: 1000px;
+      z-index: 2;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s, 
+                  height 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.7s,
+                  width 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.7s,
+                  left 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.7s;
+    }
+
+    .card-3d {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+
+    .card-3d:active {
+      cursor: grabbing;
+    }
+
+    /* Card Front & Back Faces */
+    .card-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 8px;
+      background: var(--card-bg);
+      padding: 25px;
+      color: #2b2b2b;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      border: 1px solid #e2d9c5;
+      pointer-events: none;
+    }
+
+    /* FRONT FACE CONTENT */
+    .card-front {
+      background: linear-gradient(135deg, #fffdf7 0%, #f7f0df 100%);
+    }
+
+    .card-front .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #120e0c;
+    }
+
+    .card-front .badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      background: rgba(229, 193, 88, 0.2);
+      color: #8c6d1f;
+      padding: 4px 10px;
+      border-radius: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* BACK FACE CONTENT */
+    .card-back {
+      transform: rotateY(180deg);
+      background: #faf6ed;
+    }
+
+    .card-back .body-text {
+      font-family: 'Caveat', cursive;
+      font-size: 1.7rem;
+      color: #3b2f1e;
+      line-height: 1.3;
+    }
+
+    .card-back .honor-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-red);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .instruction {
+      margin-top: 30px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--envelope-gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: bounce 1.5s infinite;
+      transition: opacity 0.3s ease;
+    }
+
+    /* OPEN STATE ANIMATIONS */
+    .wrapper.open { transform: translateY(120px); }
+
+    .wrapper.open .envelope::before {
+      transform: rotateX(180deg);
+      z-index: 1;
+      transition: transform 0.4s ease-in-out, z-index 0.1s 0.2s;
+    }
+
+    .wrapper.open .wax-seal { opacity: 0; pointer-events: none; }
+
+    .wrapper.open .card-3d-wrapper {
+      z-index: 10;
+      transform: translateY(-240px);
+      height: 340px;
+      width: 360px;
+      left: -30px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="wrapper" id="envelopeWrapper">
+      <div class="envelope">
+        <div class="wax-seal"></div>
+      </div>
+      <div class="envelope-front"></div>
+      
+      <!-- 3D Card Structure -->
+      <div class="card-3d-wrapper">
+        <div class="card-3d" id="card3D">
+          
+          <!-- Front Face -->
+          <div class="card-face card-front">
+            <div class="badge">TEACHERS' DAY 2026</div>
+            <div class="headline">
+              Happy Teachers' Day to the teacher who makes learning exciting and fun.
+            </div>
+            <div style="font-size: 0.75rem; color: #888; font-family: 'Space Mono', monospace;">
+              ↔ Drag left/right to rotate
+            </div>
+          </div>
+
+          <!-- Back Face -->
+          <div class="card-face card-back">
+            <div class="body-text">
+              "We're glad to have you as our teacher."
+            </div>
+            <div class="honor-text">
+              It is an honor to be your student.
+            </div>
+            <div style="font-family: 'Caveat', cursive; font-size: 1.2rem; color: #666;">
+              — With gratitude, BCA Batch
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="instruction" id="instructionText">✨ Click Seal to Open ✨</div>
+  </div>
+
+  <script>
+    const wrapper = document.getElementById('envelopeWrapper');
+    const card3D = document.getElementById('card3D');
+    const instruction = document.getElementById('instructionText');
+    let isOpen = false;
+
+    // Open Envelope
+    wrapper.addEventListener('click', () => {
+      if (isOpen) return;
+      isOpen = true;
+
+      wrapper.classList.add('open');
+      instruction.innerText = "↔ Click and drag the card to rotate in 3D";
+      
+      // Celebration Confetti
+      confetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#e5c158', '#f05252', '#ffffff']
+      });
+    });
+
+    // --- MANUAL 3D MOUSE & TOUCH DRAG ROTATION LOGIC ---
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentRotationY = 0;
+    let currentRotationX = 0;
+
+    const startDrag = (e) => {
+      if (!isOpen) return;
+      isDragging = true;
+      startX = e.pageX || e.touches[0].pageX;
+      startY = e.pageY || e.touches[0].pageY;
+      card3D.style.transition = 'none'; // Instant response while dragging
+    };
+
+    const doDrag = (e) => {
+      if (!isDragging) return;
+      const x = e.pageX || (e.touches && e.touches[0].pageX);
+      const y = e.pageY || (e.touches && e.touches[0].pageY);
+
+      const deltaX = x - startX;
+      const deltaY = y - startY;
+
+      // Calculate smooth rotation based on mouse distance moved
+      const rotY = currentRotationY + deltaX * 0.8;
+      const rotX = Math.max(-30, Math.min(30, currentRotationX - deltaY * 0.4)); // Limit vertical tilt
+
+      card3D.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+    };
+
+    const stopDrag = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      card3D.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+      // Save ending rotation state
+      const style = window.getComputedStyle(card3D);
+      const matrix = new WebKitCSSMatrix(style.transform);
+      
+      // Calculate continuous Y rotation angle
+      currentRotationY = Math.atan2(matrix.m13, matrix.m11) * (180 / Math.PI);
+      if (matrix.m11 < 0 && matrix.m13 === 0) currentRotationY = 180; // Correct boundary edge
+      currentRotationX = 0;
+
+      // Snap back vertical tilt smoothly while preserving user's horizontal rotation angle
+      card3D.style.transform = `rotateY(${currentRotationY}deg) rotateX(0deg)`;
+    };
+
+    // Mouse Listeners
+    card3D.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', doDrag);
+    window.addEventListener('mouseup', stopDrag);
+
+    // Touch Listeners for mobile/tablet screens
+    card3D.addEventListener('touchstart', startDrag);
+    window.addEventListener('touchmove', doDrag);
+    window.addEventListener('touchend', stopDrag);
+  </script>
+</body>
+</html>
